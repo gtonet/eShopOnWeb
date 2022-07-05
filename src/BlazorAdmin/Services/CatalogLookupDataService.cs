@@ -35,9 +35,11 @@ public class CatalogLookupDataService<TLookupData, TReponse>
     public async Task<List<TLookupData>> List()
     {
         var endpointName = typeof(TLookupData).GetCustomAttribute<EndpointAttribute>().Name;
-        _logger.LogInformation($"Fetching {typeof(TLookupData).Name} from API. Enpoint : {endpointName}");
+        _logger.LogInformation($"Fetching {typeof(TLookupData).Name} from API. Enpoint : {_apiUrl}{endpointName}");
 
-        var response = await _httpClient.GetFromJsonAsync<TReponse>($"{_apiUrl}{endpointName}");
+        var apiUrl = $"{_apiUrl}{endpointName}";
+
+        var response = await _httpClient.GetFromJsonAsync<TReponse>(apiUrl);
         return response.List;
     }
 }
