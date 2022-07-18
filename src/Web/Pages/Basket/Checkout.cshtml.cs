@@ -66,6 +66,7 @@ public class CheckoutModel : PageModel
         return RedirectToPage("Success");
     }
 
+
     private async Task SetBasketModelAsync()
     {
         if (_signInManager.IsSignedIn(HttpContext.User))

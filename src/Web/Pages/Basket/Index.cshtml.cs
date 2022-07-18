@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BlazorShared;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.Web.Interfaces;
 using Microsoft.eShopWeb.Web.ViewModels;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace Microsoft.eShopWeb.Web.Pages.Basket;
 
@@ -12,14 +15,19 @@ public class IndexModel : PageModel
     private readonly IBasketService _basketService;
     private readonly IBasketViewModelService _basketViewModelService;
     private readonly IRepository<CatalogItem> _itemRepository;
+    private readonly BaseUrlConfiguration _baseUrlConfiguration;
+    
 
     public IndexModel(IBasketService basketService,
         IBasketViewModelService basketViewModelService,
-        IRepository<CatalogItem> itemRepository)
+        IRepository<CatalogItem> itemRepository,
+        IOptions<BaseUrlConfiguration> baseUrlConfiguration)
     {
         _basketService = basketService;
         _basketViewModelService = basketViewModelService;
         _itemRepository = itemRepository;
+
+        _baseUrlConfiguration = baseUrlConfiguration.Value;
     }
 
     public BasketViewModel BasketModel { get; set; } = new BasketViewModel();
@@ -48,7 +56,37 @@ public class IndexModel : PageModel
 
         BasketModel = await _basketViewModelService.Map(basket);
 
+        var uploadResult = UploadBasketData(basket);
+
         return RedirectToPage();
+    }
+
+    private async Task<bool> UploadBasketData(ApplicationCore.Entities.BasketAggregate.Basket basket)
+    {
+        bool? isSuccess = false;
+
+        string myUrl = _baseUrlConfiguration.FuncBase;
+        var client = new HttpClient();
+
+        client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
+        client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=600");
+        client.DefaultRequestHeaders.Add("ContentType", "application/json");
+        client.DefaultRequestHeaders.Add("Accept", "*/*");
+        try
+        {
+            var basketString = JsonConvert.SerializeObject(basket);
+
+            HttpContent content = new StringContent(basketString);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            var result = await client.PostAsync(myUrl, content);
+
+            isSuccess = result?.IsSuccessStatusCode;
+        }
+        catch (Exception exp)
+        {
+            isSuccess = false;
+        }
+        return isSuccess.HasValue && isSuccess.Value;
     }
 
     public async Task OnPostUpdate(IEnumerable<BasketItemViewModel> items)
