@@ -8,31 +8,39 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
+using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
 
 namespace OrderItemsReserverFunction
 {
-    public class OrderItemsReserver
+    public class SaveOrder
     {
-        [FunctionName("OrderItemsReserver")]
+       
+        [FunctionName("SaveOrder")]
         public async Task<string> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
-             [Blob("basket", FileAccess.ReadWrite, Connection = "StorageConnectionString")] Azure.Storage.Blobs.BlobContainerClient blobContainer,
+             [CosmosDB("eShop1",
+                      "OrderInfo",
+                      ConnectionStringSetting = "CosmosConnectionStringSetting",
+                      CreateIfNotExists = true)] IAsyncCollector<dynamic> items,
             ILogger log)
         {
-            log.LogInformation("Received a basket.");
+            log.LogInformation("Received an order.");
             string responseMessage = String.Empty;
             var body = await new StreamReader(req.Body).ReadToEndAsync();
             try
             {
                 var newId = Guid.NewGuid();
-                var blobName = $"{newId}.json";
 
-                await blobContainer.CreateIfNotExistsAsync();
-                var cloudBlockBlob = blobContainer.GetBlobClient(blobName);
-                BinaryData data = new BinaryData(body);
-                await cloudBlockBlob.UploadAsync(data);
+                var order = JsonConvert.DeserializeObject<Order>(body);
+                var item = new
+                {
+                    id = newId,
+                    orderInfo = body
+                };
 
-                responseMessage = $"The basket {newId} is upload successfully.";
+                await items.AddAsync(order); // 
+
+                responseMessage = $"The order {newId} is upload successfully.";
             }
             catch (Exception exp)
             {

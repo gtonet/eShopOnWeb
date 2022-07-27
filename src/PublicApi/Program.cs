@@ -125,6 +125,8 @@ builder.Services.AddSwaggerGen(c =>
             });
 });
 
+builder.Services.AddApplicationInsightsTelemetry();
+
 var app = builder.Build();
 
 app.Logger.LogInformation("PublicApi App created...");

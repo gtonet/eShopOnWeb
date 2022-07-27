@@ -6,6 +6,7 @@
     <UserSecretsId>5b662463-1efd-4bae-bde4-befe0be3e8ff</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
+    <ApplicationInsightsResourceId>/subscriptions/85a45144-7522-4196-a316-17960331ee41/resourceGroups/EShopWebRG/providers/microsoft.insights/components/esweb22</ApplicationInsightsResourceId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,6 +32,9 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.7" />
 
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.21.0" />
+ 
+    <!-- Application insight -->
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
   </ItemGroup>
 
   <ItemGroup>

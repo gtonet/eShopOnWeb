@@ -65,7 +65,7 @@ public class IndexModel : PageModel
     {
         bool? isSuccess = false;
 
-        string myUrl = _baseUrlConfiguration.FuncBase;
+        string myUrl = $"{_baseUrlConfiguration.FuncBase}OrderItemsReserver";
         var client = new HttpClient();
 
         client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
