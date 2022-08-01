@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Azure.Identity;
 using BlazorShared;
 using BlazorShared.Models;
 using MediatR;
@@ -34,6 +35,15 @@ builder.Services.AddEndpoints();
 builder.Configuration.AddConfigurationFile("appsettings.test.json");
 builder.Logging.AddConsole();
 
+#region add Azure keyVault 
+var userAssignedClientId = "";
+var vaultName = builder.Configuration["keyVaultName"];
+var vaultUri = new Uri($"https://{vaultName}.vault.azure.net/");
+//builder.Configuration.AddAzureKeyVault(vaultUri, new DefaultAzureCredential());
+builder.Configuration.AddAzureKeyVault(vaultUri, new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = userAssignedClientId }));
+
+#endregion
+// call Dependencies method after add Azure KeyVault
 Microsoft.eShopWeb.Infrastructure.Dependencies.ConfigureServices(builder.Configuration, builder.Services);
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -140,7 +150,7 @@ using (var scope = app.Services.CreateScope())
     {
         var catalogContext = scopedProvider.GetRequiredService<CatalogContext>();
         await CatalogContextSeed.SeedAsync(catalogContext, app.Logger);
-
+        
         var userManager = scopedProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = scopedProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var identityContext = scopedProvider.GetRequiredService<AppIdentityDbContext>();

@@ -27,15 +27,23 @@ public static class Dependencies
         else
         {
         */
-            // use real database
-            // Requires LocalDB which can be installed with SQL Server Express 2016
-            // https://www.microsoft.com/en-us/download/details.aspx?id=54284
-            services.AddDbContext<CatalogContext>(c =>
-                c.UseSqlServer(configuration.GetConnectionString("CatalogConnection")));
+        var catalogSecurityName = "CatalogConnection";
+        var catalogConnectionString = configuration[catalogSecurityName];
+
+        var identitySecurityName = "IdentityConnection";
+        var identityConnectionString = configuration[identitySecurityName];
+
+        // use real database
+        // Requires LocalDB which can be installed with SQL Server Express 2016
+        // https://www.microsoft.com/en-us/download/details.aspx?id=54284
+        services.AddDbContext<CatalogContext>(c =>
+                c.UseSqlServer(catalogConnectionString));
+        // configuration.GetConnectionString("CatalogConnection")
 
             // Add Identity DbContext
             services.AddDbContext<AppIdentityDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("IdentityConnection")));
+                options.UseSqlServer(identityConnectionString));
+        // configuration.GetConnectionString("IdentityConnection")
         //}
     }
 }

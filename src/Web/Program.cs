@@ -1,5 +1,6 @@
 ﻿using System.Net.Mime;
 using Ardalis.ListStartupServices;
+using Azure.Identity;
 using BlazorAdmin;
 using BlazorAdmin.Services;
 using Blazored.LocalStorage;
@@ -21,6 +22,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddConsole();
 
+#region add Azure keyVault 
+var userAssignedClientId = "";
+var vaultName = builder.Configuration["keyVaultName"];
+var vaultUri = new Uri($"https://{vaultName}.vault.azure.net/");
+//builder.Configuration.AddAzureKeyVault(vaultUri, new DefaultAzureCredential());
+builder.Configuration.AddAzureKeyVault(vaultUri, new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = userAssignedClientId }));
+
+#endregion
+
+// call Dependencies method after add Azure KeyVault
 Microsoft.eShopWeb.Infrastructure.Dependencies.ConfigureServices(builder.Configuration, builder.Services);
 
 builder.Services.AddCookieSettings();
